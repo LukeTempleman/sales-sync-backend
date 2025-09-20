@@ -383,3 +383,7 @@ All scripts are located in the `scripts` directory:
 ## License
 
 [MIT](LICENSE)
+
+## Contributors
+
+- OpenHands Team
