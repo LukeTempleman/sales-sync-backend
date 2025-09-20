@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    restart: always
+    expose:
+      - "5000"
+    environment:
+      - FLASK_APP=sales_sync_backend/app.py
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - S3_BUCKET=${S3_BUCKET}
+      - S3_REGION=${S3_REGION}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - ENABLE_API_DOCS=1
+    depends_on:
+      - db
+    networks:
+      - sales_sync_network
+
+  db:
+    image: postgres:13
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    networks:
+      - sales_sync_network
+
+  nginx:
+    image: nginx:1.19
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./uploads:/app/uploads
+    depends_on:
+      - api
+    networks:
+      - sales_sync_network
+
+networks:
+  sales_sync_network:
+    driver: bridge
+
+volumes:
+  postgres_data:

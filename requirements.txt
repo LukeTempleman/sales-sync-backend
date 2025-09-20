@@ -1,0 +1,40 @@
+# Flask and extensions
+Flask==2.0.1
+Flask-JWT-Extended==4.3.1
+Flask-Migrate==3.1.0
+Flask-SQLAlchemy==2.5.1
+flask-swagger-ui==3.36.0
+apispec==5.1.1
+
+# Database
+SQLAlchemy==1.4.23
+psycopg2-binary==2.8.6
+alembic==1.7.3
+geoalchemy2==0.10.2
+
+# Serialization and validation
+marshmallow==3.13.0
+
+# Password hashing
+passlib==1.7.4
+bcrypt==3.2.0
+
+# AWS S3
+boto3==1.18.44
+
+# WSGI server
+gunicorn==20.1.0
+
+# Testing
+pytest==6.2.5
+pytest-flask==1.2.0
+pytest-cov==2.12.1
+
+# Async tasks (optional)
+celery==5.2.7
+redis==3.5.3
+
+# Utilities
+python-dotenv==0.19.0
+werkzeug==2.0.1
+email-validator==1.1.3

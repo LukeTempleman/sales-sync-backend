@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    command: ./scripts/run_with_docs.sh
+    volumes:
+      - .:/app
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=sales_sync_backend/app.py
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/sales_sync
+      - JWT_SECRET_KEY=dev_secret_key_change_in_production
+      - S3_BUCKET=
+      - S3_REGION=
+      - UPLOAD_FOLDER=/app/uploads
+      - FILE_BASE_URL=http://localhost:5000/files
+      - ENABLE_API_DOCS=1
+    depends_on:
+      - db
+    networks:
+      - sales_sync_network
+
+  db:
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=sales_sync
+    ports:
+      - "5432:5432"
+    networks:
+      - sales_sync_network
+
+networks:
+  sales_sync_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
