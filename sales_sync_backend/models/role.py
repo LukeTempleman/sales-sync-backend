@@ -11,7 +11,7 @@ class Role(BaseModel):
     name = Column(String, nullable=False, unique=True)
     
     # Relationships
-    users = relationship('User', secondary='user_roles')
+    users = relationship('User', secondary='user_roles', overlaps="roles")
     
     def to_dict(self):
         """Convert model to dictionary."""

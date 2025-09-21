@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, current_app, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime
 
@@ -34,7 +34,7 @@ def get_overview_handler():
     
     # Get overview metrics
     metrics = get_overview_metrics(
-        request.app.db_session,
+        current_app.db_session,
         tenant_id,
         user_id,
         start_date,
@@ -68,7 +68,7 @@ def get_visits_handler():
     
     # Get visits metrics
     metrics = get_visits_metrics(
-        request.app.db_session,
+        current_app.db_session,
         tenant_id,
         user_id,
         start_date,
@@ -102,7 +102,7 @@ def get_shelf_share_handler():
     
     # Get shelf share metrics
     metrics = get_shelf_share_metrics(
-        request.app.db_session,
+        current_app.db_session,
         tenant_id,
         user_id,
         start_date,
@@ -135,7 +135,7 @@ def get_call_cycle_coverage_handler():
     
     # Get call cycle coverage metrics
     metrics = get_call_cycle_coverage_metrics(
-        request.app.db_session,
+        current_app.db_session,
         tenant_id,
         user_id,
         start_date,

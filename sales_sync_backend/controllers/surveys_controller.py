@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, current_app, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from services.survey_service import (
@@ -38,7 +38,7 @@ def get_surveys_handler():
         filters['brand_id'] = request.args.get('brand_id')
     
     # Get surveys
-    surveys = get_surveys(request.app.db_session, tenant_id, filters)
+    surveys = get_surveys(current_app.db_session, tenant_id, filters)
     
     # Return surveys
     return jsonify([survey.to_dict() for survey in surveys]), 200
@@ -54,7 +54,7 @@ def get_survey_handler(survey_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Get survey
-    survey = get_survey_by_id(request.app.db_session, tenant_id, survey_id)
+    survey = get_survey_by_id(current_app.db_session, tenant_id, survey_id)
     if not survey:
         return jsonify({'error': 'Survey not found'}), 404
     
@@ -87,7 +87,7 @@ def create_survey_handler():
     
     # Create survey
     survey = create_survey(
-        request.app.db_session,
+        current_app.db_session,
         tenant_id,
         data.get('name'),
         data.get('type'),
@@ -113,7 +113,7 @@ def update_survey_handler(survey_id):
     data = request.get_json()
     
     # Update survey
-    survey = update_survey(request.app.db_session, tenant_id, survey_id, data)
+    survey = update_survey(current_app.db_session, tenant_id, survey_id, data)
     if not survey:
         return jsonify({'error': 'Survey not found'}), 404
     
@@ -131,7 +131,7 @@ def delete_survey_handler(survey_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Delete survey
-    success = delete_survey(request.app.db_session, tenant_id, survey_id)
+    success = delete_survey(current_app.db_session, tenant_id, survey_id)
     if not success:
         return jsonify({'error': 'Survey not found'}), 404
     
@@ -149,12 +149,12 @@ def get_survey_questions_handler(survey_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Get survey
-    survey = get_survey_by_id(request.app.db_session, tenant_id, survey_id)
+    survey = get_survey_by_id(current_app.db_session, tenant_id, survey_id)
     if not survey:
         return jsonify({'error': 'Survey not found'}), 404
     
     # Get questions
-    questions = get_survey_questions(request.app.db_session, tenant_id, survey_id)
+    questions = get_survey_questions(current_app.db_session, tenant_id, survey_id)
     
     # Return questions
     return jsonify([question.to_dict() for question in questions]), 200
@@ -170,7 +170,7 @@ def create_question_handler(survey_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Get survey
-    survey = get_survey_by_id(request.app.db_session, tenant_id, survey_id)
+    survey = get_survey_by_id(current_app.db_session, tenant_id, survey_id)
     if not survey:
         return jsonify({'error': 'Survey not found'}), 404
     
@@ -187,7 +187,7 @@ def create_question_handler(survey_id):
     
     # Create question
     question = create_question(
-        request.app.db_session,
+        current_app.db_session,
         tenant_id,
         survey_id,
         data.get('question_text'),
@@ -213,7 +213,7 @@ def update_question_handler(question_id):
     data = request.get_json()
     
     # Update question
-    question = update_question(request.app.db_session, tenant_id, question_id, data)
+    question = update_question(current_app.db_session, tenant_id, question_id, data)
     if not question:
         return jsonify({'error': 'Question not found'}), 404
     
@@ -231,7 +231,7 @@ def delete_question_handler(question_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Delete question
-    success = delete_question(request.app.db_session, tenant_id, question_id)
+    success = delete_question(current_app.db_session, tenant_id, question_id)
     if not success:
         return jsonify({'error': 'Question not found'}), 404
     

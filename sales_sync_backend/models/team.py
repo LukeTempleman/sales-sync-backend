@@ -13,7 +13,7 @@ class Team(BaseModel, TenantScopedMixin):
     manager_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=True)
     
     # Relationships
-    users = relationship('User', secondary='user_teams')
+    users = relationship('User', secondary='user_teams', overlaps="teams")
     
     __table_args__ = (
         UniqueConstraint('tenant_id', 'name', name='uq_team_tenant_name'),

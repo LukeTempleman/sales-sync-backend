@@ -1,0 +1,1849 @@
+{
+  "info": {
+    "name": "Sales Sync Backend API",
+    "description": "Complete API collection for Sales Sync Backend - a multi-tenant sales management system",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken", 
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tenantId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-set Authorization header for protected endpoints",
+          "if (pm.request.url.path.includes('api') && !pm.request.url.path.includes('auth/login') && !pm.request.url.path.includes('auth/register')) {",
+          "    const token = pm.collectionVariables.get('accessToken');",
+          "    if (token) {",
+          "        pm.request.headers.add({key: 'Authorization', value: 'Bearer ' + token});",
+          "    }",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-extract tokens from login/register responses",
+          "if (pm.response.code === 200 || pm.response.code === 201) {",
+          "    const jsonData = pm.response.json();",
+          "    if (jsonData.tokens) {",
+          "        pm.collectionVariables.set('accessToken', jsonData.tokens.access_token);",
+          "        pm.collectionVariables.set('refreshToken', jsonData.tokens.refresh_token);",
+          "    }",
+          "    if (jsonData.user && jsonData.user.id) {",
+          "        pm.collectionVariables.set('userId', jsonData.user.id);",
+          "    }",
+          "    if (jsonData.tenant && jsonData.tenant.id) {",
+          "        pm.collectionVariables.set('tenantId', jsonData.tenant.id);",
+          "    }",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"Password123\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"phone\": \"+1234567890\",\n  \"tenant_name\": \"Example Corp\",\n  \"subdomain\": \"example\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Register a new tenant and admin user"
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"Password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login with email and password"
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{refreshToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "refresh"]
+            },
+            "description": "Refresh access token using refresh token"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            },
+            "description": "Logout and revoke tokens"
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/forgot-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "forgot-password"]
+            },
+            "description": "Request password reset"
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"reset-token-here\",\n  \"password\": \"NewPassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/reset-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "reset-password"]
+            },
+            "description": "Reset password with token"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users?email=&is_active=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "",
+                  "description": "Filter by email"
+                },
+                {
+                  "key": "is_active",
+                  "value": "true",
+                  "description": "Filter by active status"
+                }
+              ]
+            },
+            "description": "Get all users for the tenant"
+          }
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Password123\",\n  \"first_name\": \"Jane\",\n  \"last_name\": \"Smith\",\n  \"phone\": \"+1234567891\",\n  \"roles\": [\"agent\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            },
+            "description": "Create a new user"
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{userId}}"]
+            },
+            "description": "Get user by ID"
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Jane Updated\",\n  \"last_name\": \"Smith Updated\",\n  \"phone\": \"+1234567892\",\n  \"is_active\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{userId}}"]
+            },
+            "description": "Update user information"
+          }
+        },
+        {
+          "name": "Update User Roles",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roles\": [\"manager\", \"agent\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}/roles",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{userId}}", "roles"]
+            },
+            "description": "Update user roles"
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{userId}}"]
+            },
+            "description": "Delete user"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Brands",
+      "item": [
+        {
+          "name": "Get Brands",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/brands",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "brands"]
+            },
+            "description": "Get all brands"
+          }
+        },
+        {
+          "name": "Create Brand",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Coca Cola\",\n  \"slug\": \"coca-cola\",\n  \"active\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/brands",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "brands"]
+            },
+            "description": "Create a new brand"
+          }
+        },
+        {
+          "name": "Get Brand by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/brands/:brandId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "brands", ":brandId"],
+              "variable": [
+                {
+                  "key": "brandId",
+                  "value": "brand-uuid-here"
+                }
+              ]
+            },
+            "description": "Get brand by ID"
+          }
+        },
+        {
+          "name": "Update Brand",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Coca Cola Updated\",\n  \"active\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/brands/:brandId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "brands", ":brandId"],
+              "variable": [
+                {
+                  "key": "brandId",
+                  "value": "brand-uuid-here"
+                }
+              ]
+            },
+            "description": "Update brand"
+          }
+        },
+        {
+          "name": "Delete Brand",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/brands/:brandId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "brands", ":brandId"],
+              "variable": [
+                {
+                  "key": "brandId",
+                  "value": "brand-uuid-here"
+                }
+              ]
+            },
+            "description": "Delete brand"
+          }
+        },
+        {
+          "name": "Get Brand Infographics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/brands/:brandId/infographics",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "brands", ":brandId", "infographics"],
+              "variable": [
+                {
+                  "key": "brandId",
+                  "value": "brand-uuid-here"
+                }
+              ]
+            },
+            "description": "Get brand infographics"
+          }
+        },
+        {
+          "name": "Create Brand Infographic",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"file_url\": \"https://example.com/infographic.jpg\",\n  \"caption\": \"Brand infographic caption\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/brands/:brandId/infographics",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "brands", ":brandId", "infographics"],
+              "variable": [
+                {
+                  "key": "brandId",
+                  "value": "brand-uuid-here"
+                }
+              ]
+            },
+            "description": "Create brand infographic"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Visits",
+      "item": [
+        {
+          "name": "Get Visits",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/visits",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "visits"]
+            },
+            "description": "Get all visits"
+          }
+        },
+        {
+          "name": "Create Visit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"location_id\": \"location-uuid-here\",\n  \"survey_id\": \"survey-uuid-here\",\n  \"scheduled_date\": \"2024-01-15T10:00:00Z\",\n  \"notes\": \"Initial visit\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/visits",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "visits"]
+            },
+            "description": "Create a new visit"
+          }
+        },
+        {
+          "name": "Get Visit by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/visits/:visitId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "visits", ":visitId"],
+              "variable": [
+                {
+                  "key": "visitId",
+                  "value": "visit-uuid-here"
+                }
+              ]
+            },
+            "description": "Get visit by ID"
+          }
+        },
+        {
+          "name": "Complete Visit",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"completed\",\n  \"completion_notes\": \"Visit completed successfully\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/visits/:visitId/complete",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "visits", ":visitId", "complete"],
+              "variable": [
+                {
+                  "key": "visitId",
+                  "value": "visit-uuid-here"
+                }
+              ]
+            },
+            "description": "Complete a visit"
+          }
+        },
+        {
+          "name": "Get Visit Answers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/visits/:visitId/answers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "visits", ":visitId", "answers"],
+              "variable": [
+                {
+                  "key": "visitId",
+                  "value": "visit-uuid-here"
+                }
+              ]
+            },
+            "description": "Get visit survey answers"
+          }
+        },
+        {
+          "name": "Get Visit Photos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/visits/:visitId/photos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "visits", ":visitId", "photos"],
+              "variable": [
+                {
+                  "key": "visitId",
+                  "value": "visit-uuid-here"
+                }
+              ]
+            },
+            "description": "Get visit photos"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teams",
+      "item": [
+        {
+          "name": "Get Teams",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/teams",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "teams"]
+            },
+            "description": "Get all teams"
+          }
+        },
+        {
+          "name": "Create Team",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sales Team A\",\n  \"description\": \"Primary sales team for north region\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/teams",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "teams"]
+            },
+            "description": "Create a new team"
+          }
+        },
+        {
+          "name": "Get Team by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/teams/:teamId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "teams", ":teamId"],
+              "variable": [
+                {
+                  "key": "teamId",
+                  "value": "team-uuid-here"
+                }
+              ]
+            },
+            "description": "Get team by ID"
+          }
+        },
+        {
+          "name": "Update Team",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sales Team A Updated\",\n  \"description\": \"Updated description\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/teams/:teamId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "teams", ":teamId"],
+              "variable": [
+                {
+                  "key": "teamId",
+                  "value": "team-uuid-here"
+                }
+              ]
+            },
+            "description": "Update team"
+          }
+        },
+        {
+          "name": "Get Team Members",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/teams/:teamId/members",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "teams", ":teamId", "members"],
+              "variable": [
+                {
+                  "key": "teamId",
+                  "value": "team-uuid-here"
+                }
+              ]
+            },
+            "description": "Get team members"
+          }
+        },
+        {
+          "name": "Add Team Member",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": \"user-uuid-here\",\n  \"role\": \"member\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/teams/:teamId/members",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "teams", ":teamId", "members"],
+              "variable": [
+                {
+                  "key": "teamId",
+                  "value": "team-uuid-here"
+                }
+              ]
+            },
+            "description": "Add team member"
+          }
+        },
+        {
+          "name": "Remove Team Member",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/teams/:teamId/members/:userId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "teams", ":teamId", "members", ":userId"],
+              "variable": [
+                {
+                  "key": "teamId",
+                  "value": "team-uuid-here"
+                },
+                {
+                  "key": "userId",
+                  "value": "user-uuid-here"
+                }
+              ]
+            },
+            "description": "Remove team member"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Surveys",
+      "item": [
+        {
+          "name": "Get Surveys",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/surveys",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "surveys"]
+            },
+            "description": "Get all surveys"
+          }
+        },
+        {
+          "name": "Create Survey",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Store Visit Survey\",\n  \"type\": \"shop\",\n  \"brand_id\": \"brand-uuid-here\",\n  \"active\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/surveys",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "surveys"]
+            },
+            "description": "Create a new survey"
+          }
+        },
+        {
+          "name": "Get Survey by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/surveys/:surveyId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "surveys", ":surveyId"],
+              "variable": [
+                {
+                  "key": "surveyId",
+                  "value": "survey-uuid-here"
+                }
+              ]
+            },
+            "description": "Get survey by ID"
+          }
+        },
+        {
+          "name": "Update Survey",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Store Visit Survey\",\n  \"type\": \"individual\",\n  \"active\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/surveys/:surveyId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "surveys", ":surveyId"],
+              "variable": [
+                {
+                  "key": "surveyId",
+                  "value": "survey-uuid-here"
+                }
+              ]
+            },
+            "description": "Update survey"
+          }
+        },
+        {
+          "name": "Delete Survey",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/surveys/:surveyId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "surveys", ":surveyId"],
+              "variable": [
+                {
+                  "key": "surveyId",
+                  "value": "survey-uuid-here"
+                }
+              ]
+            },
+            "description": "Delete survey"
+          }
+        },
+        {
+          "name": "Get Survey Questions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/surveys/:surveyId/questions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "surveys", ":surveyId", "questions"],
+              "variable": [
+                {
+                  "key": "surveyId",
+                  "value": "survey-uuid-here"
+                }
+              ]
+            },
+            "description": "Get survey questions"
+          }
+        },
+        {
+          "name": "Create Survey Question",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question_text\": \"How would you rate the store cleanliness?\",\n  \"input_type\": \"select\",\n  \"meta\": {\n    \"options\": [\"Excellent\", \"Good\", \"Fair\", \"Poor\"]\n  },\n  \"order_num\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/surveys/:surveyId/questions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "surveys", ":surveyId", "questions"],
+              "variable": [
+                {
+                  "key": "surveyId",
+                  "value": "survey-uuid-here"
+                }
+              ]
+            },
+            "description": "Create survey question"
+          }
+        },
+        {
+          "name": "Update Question",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question_text\": \"Updated question text\",\n  \"input_type\": \"text\",\n  \"order_num\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/questions/:questionId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "questions", ":questionId"],
+              "variable": [
+                {
+                  "key": "questionId",
+                  "value": "question-uuid-here"
+                }
+              ]
+            },
+            "description": "Update survey question"
+          }
+        },
+        {
+          "name": "Delete Question",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/questions/:questionId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "questions", ":questionId"],
+              "variable": [
+                {
+                  "key": "questionId",
+                  "value": "question-uuid-here"
+                }
+              ]
+            },
+            "description": "Delete survey question"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Goals",
+      "item": [
+        {
+          "name": "Get Goals",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/goals",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "goals"]
+            },
+            "description": "Get all goals"
+          }
+        },
+        {
+          "name": "Create Goal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Monthly Sales Target\",\n  \"description\": \"Achieve 100 visits this month\",\n  \"target_value\": 100,\n  \"metric_type\": \"visits\",\n  \"period_type\": \"monthly\",\n  \"start_date\": \"2024-01-01\",\n  \"end_date\": \"2024-01-31\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/goals",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "goals"]
+            },
+            "description": "Create a new goal"
+          }
+        },
+        {
+          "name": "Get Goal by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/goals/:goalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "goals", ":goalId"],
+              "variable": [
+                {
+                  "key": "goalId",
+                  "value": "goal-uuid-here"
+                }
+              ]
+            },
+            "description": "Get goal by ID"
+          }
+        },
+        {
+          "name": "Update Goal",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Monthly Sales Target\",\n  \"target_value\": 120\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/goals/:goalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "goals", ":goalId"],
+              "variable": [
+                {
+                  "key": "goalId",
+                  "value": "goal-uuid-here"
+                }
+              ]
+            },
+            "description": "Update goal"
+          }
+        },
+        {
+          "name": "Delete Goal",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/goals/:goalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "goals", ":goalId"],
+              "variable": [
+                {
+                  "key": "goalId",
+                  "value": "goal-uuid-here"
+                }
+              ]
+            },
+            "description": "Delete goal"
+          }
+        },
+        {
+          "name": "Get Goal Assignments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/goals/:goalId/assignments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "goals", ":goalId", "assignments"],
+              "variable": [
+                {
+                  "key": "goalId",
+                  "value": "goal-uuid-here"
+                }
+              ]
+            },
+            "description": "Get goal assignments"
+          }
+        },
+        {
+          "name": "Assign Goal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assignee_type\": \"user\",\n  \"assignee_id\": \"user-uuid-here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/goals/:goalId/assign",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "goals", ":goalId", "assign"],
+              "variable": [
+                {
+                  "key": "goalId",
+                  "value": "goal-uuid-here"
+                }
+              ]
+            },
+            "description": "Assign goal to user or team"
+          }
+        },
+        {
+          "name": "Unassign Goal",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/goals/:goalId/unassign/:assigneeType/:assigneeId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "goals", ":goalId", "unassign", ":assigneeType", ":assigneeId"],
+              "variable": [
+                {
+                  "key": "goalId",
+                  "value": "goal-uuid-here"
+                },
+                {
+                  "key": "assigneeType",
+                  "value": "user"
+                },
+                {
+                  "key": "assigneeId",
+                  "value": "user-uuid-here"
+                }
+              ]
+            },
+            "description": "Unassign goal from user or team"
+          }
+        },
+        {
+          "name": "Update Goal Progress",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"current_value\": 50,\n  \"notes\": \"Halfway to target\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/goals/:goalId/progress/:assigneeType/:assigneeId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "goals", ":goalId", "progress", ":assigneeType", ":assigneeId"],
+              "variable": [
+                {
+                  "key": "goalId",
+                  "value": "goal-uuid-here"
+                },
+                {
+                  "key": "assigneeType",
+                  "value": "user"
+                },
+                {
+                  "key": "assigneeId",
+                  "value": "user-uuid-here"
+                }
+              ]
+            },
+            "description": "Update goal progress"
+          }
+        },
+        {
+          "name": "Get Goal Progress",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/goals/:goalId/progress",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "goals", ":goalId", "progress"],
+              "variable": [
+                {
+                  "key": "goalId",
+                  "value": "goal-uuid-here"
+                }
+              ]
+            },
+            "description": "Get goal progress"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Call Cycles",
+      "item": [
+        {
+          "name": "Get Call Cycles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/call_cycles",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "call_cycles"]
+            },
+            "description": "Get all call cycles"
+          }
+        },
+        {
+          "name": "Create Call Cycle",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Weekly Route A\",\n  \"description\": \"Weekly call cycle for route A\",\n  \"frequency\": \"weekly\",\n  \"start_date\": \"2024-01-01\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/call_cycles",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "call_cycles"]
+            },
+            "description": "Create a new call cycle"
+          }
+        },
+        {
+          "name": "Get Call Cycle by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/call_cycles/:callCycleId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "call_cycles", ":callCycleId"],
+              "variable": [
+                {
+                  "key": "callCycleId",
+                  "value": "call-cycle-uuid-here"
+                }
+              ]
+            },
+            "description": "Get call cycle by ID"
+          }
+        },
+        {
+          "name": "Update Call Cycle",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Weekly Route A\",\n  \"description\": \"Updated description\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/call_cycles/:callCycleId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "call_cycles", ":callCycleId"],
+              "variable": [
+                {
+                  "key": "callCycleId",
+                  "value": "call-cycle-uuid-here"
+                }
+              ]
+            },
+            "description": "Update call cycle"
+          }
+        },
+        {
+          "name": "Delete Call Cycle",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/call_cycles/:callCycleId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "call_cycles", ":callCycleId"],
+              "variable": [
+                {
+                  "key": "callCycleId",
+                  "value": "call-cycle-uuid-here"
+                }
+              ]
+            },
+            "description": "Delete call cycle"
+          }
+        },
+        {
+          "name": "Get Call Cycle Locations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/call_cycles/:callCycleId/locations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "call_cycles", ":callCycleId", "locations"],
+              "variable": [
+                {
+                  "key": "callCycleId",
+                  "value": "call-cycle-uuid-here"
+                }
+              ]
+            },
+            "description": "Get call cycle locations"
+          }
+        },
+        {
+          "name": "Add Call Cycle Location",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"location_id\": \"location-uuid-here\",\n  \"order_num\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/call_cycles/:callCycleId/locations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "call_cycles", ":callCycleId", "locations"],
+              "variable": [
+                {
+                  "key": "callCycleId",
+                  "value": "call-cycle-uuid-here"
+                }
+              ]
+            },
+            "description": "Add location to call cycle"
+          }
+        },
+        {
+          "name": "Remove Call Cycle Location",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/call_cycles/:callCycleId/locations/:locationId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "call_cycles", ":callCycleId", "locations", ":locationId"],
+              "variable": [
+                {
+                  "key": "callCycleId",
+                  "value": "call-cycle-uuid-here"
+                },
+                {
+                  "key": "locationId",
+                  "value": "location-uuid-here"
+                }
+              ]
+            },
+            "description": "Remove location from call cycle"
+          }
+        },
+        {
+          "name": "Update Call Cycle Location Order",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order_num\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/call_cycles/:callCycleId/locations/:locationId/order",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "call_cycles", ":callCycleId", "locations", ":locationId", "order"],
+              "variable": [
+                {
+                  "key": "callCycleId",
+                  "value": "call-cycle-uuid-here"
+                },
+                {
+                  "key": "locationId",
+                  "value": "location-uuid-here"
+                }
+              ]
+            },
+            "description": "Update call cycle location order"
+          }
+        },
+        {
+          "name": "Get Call Cycle Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/call_cycles/:callCycleId/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "call_cycles", ":callCycleId", "status"],
+              "variable": [
+                {
+                  "key": "callCycleId",
+                  "value": "call-cycle-uuid-here"
+                }
+              ]
+            },
+            "description": "Get call cycle status"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Photos",
+      "item": [
+        {
+          "name": "Get Photos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/photos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "photos"]
+            },
+            "description": "Get all photos"
+          }
+        },
+        {
+          "name": "Create Photo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"file_url\": \"https://example.com/photo.jpg\",\n  \"visit_id\": \"visit-uuid-here\",\n  \"photo_type\": \"shelf\",\n  \"caption\": \"Store shelf photo\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/photos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "photos"]
+            },
+            "description": "Create a new photo"
+          }
+        },
+        {
+          "name": "Get Photo by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/photos/:photoId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "photos", ":photoId"],
+              "variable": [
+                {
+                  "key": "photoId",
+                  "value": "photo-uuid-here"
+                }
+              ]
+            },
+            "description": "Get photo by ID"
+          }
+        },
+        {
+          "name": "Get Photo Shelf Quadrants",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/photos/:photoId/shelf_quadrants",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "photos", ":photoId", "shelf_quadrants"],
+              "variable": [
+                {
+                  "key": "photoId",
+                  "value": "photo-uuid-here"
+                }
+              ]
+            },
+            "description": "Get photo shelf quadrants"
+          }
+        },
+        {
+          "name": "Create Photo Shelf Quadrant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quadrant\": \"top_left\",\n  \"brand_id\": \"brand-uuid-here\",\n  \"percentage\": 25.5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/photos/:photoId/shelf_quadrants",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "photos", ":photoId", "shelf_quadrants"],
+              "variable": [
+                {
+                  "key": "photoId",
+                  "value": "photo-uuid-here"
+                }
+              ]
+            },
+            "description": "Create photo shelf quadrant"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "item": [
+        {
+          "name": "Get Analytics Overview",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/analytics/overview?start_date=2024-01-01&end_date=2024-01-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "analytics", "overview"],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "2024-01-01"
+                },
+                {
+                  "key": "end_date",
+                  "value": "2024-01-31"
+                }
+              ]
+            },
+            "description": "Get analytics overview"
+          }
+        },
+        {
+          "name": "Get Visit Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/analytics/visits?start_date=2024-01-01&end_date=2024-01-31&user_id=",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "analytics", "visits"],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "2024-01-01"
+                },
+                {
+                  "key": "end_date",
+                  "value": "2024-01-31"
+                },
+                {
+                  "key": "user_id",
+                  "value": "",
+                  "description": "Optional user filter"
+                }
+              ]
+            },
+            "description": "Get visit analytics"
+          }
+        },
+        {
+          "name": "Get Shelf Share Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/analytics/shelf_share?start_date=2024-01-01&end_date=2024-01-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "analytics", "shelf_share"],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "2024-01-01"
+                },
+                {
+                  "key": "end_date",
+                  "value": "2024-01-31"
+                }
+              ]
+            },
+            "description": "Get shelf share analytics"
+          }
+        },
+        {
+          "name": "Get Call Cycle Coverage Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/analytics/call_cycle_coverage?start_date=2024-01-01&end_date=2024-01-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "analytics", "call_cycle_coverage"],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "2024-01-01"
+                },
+                {
+                  "key": "end_date",
+                  "value": "2024-01-31"
+                }
+              ]
+            },
+            "description": "Get call cycle coverage analytics"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Get User Activity",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/activity?start_date=2024-01-01&end_date=2024-01-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "users", "activity"],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "2024-01-01"
+                },
+                {
+                  "key": "end_date",
+                  "value": "2024-01-31"
+                }
+              ]
+            },
+            "description": "Get user activity report"
+          }
+        },
+        {
+          "name": "Get Survey Completion Rates",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/surveys/completion?start_date=2024-01-01&end_date=2024-01-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "surveys", "completion"],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "2024-01-01"
+                },
+                {
+                  "key": "end_date",
+                  "value": "2024-01-31"
+                }
+              ]
+            },
+            "description": "Get survey completion rates"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Audit",
+      "item": [
+        {
+          "name": "Get Tenant Audit Logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/audit?limit=50&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "audit"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "Get tenant audit logs"
+          }
+        },
+        {
+          "name": "Get All Audit Logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/audit/all?limit=50&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "audit", "all"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "Get all audit logs (super admin only)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tenants",
+      "item": [
+        {
+          "name": "Get Tenants",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tenants",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tenants"]
+            },
+            "description": "Get all tenants"
+          }
+        },
+        {
+          "name": "Create Tenant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New Company\",\n  \"subdomain\": \"newcompany\",\n  \"settings\": {\n    \"timezone\": \"UTC\",\n    \"currency\": \"USD\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tenants",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tenants"]
+            },
+            "description": "Create a new tenant"
+          }
+        },
+        {
+          "name": "Get Tenant by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tenants/:tenantId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tenants", ":tenantId"],
+              "variable": [
+                {
+                  "key": "tenantId",
+                  "value": "{{tenantId}}"
+                }
+              ]
+            },
+            "description": "Get tenant by ID"
+          }
+        },
+        {
+          "name": "Update Tenant",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Company Name\",\n  \"settings\": {\n    \"timezone\": \"America/New_York\",\n    \"currency\": \"USD\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tenants/:tenantId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tenants", ":tenantId"],
+              "variable": [
+                {
+                  "key": "tenantId",
+                  "value": "{{tenantId}}"
+                }
+              ]
+            },
+            "description": "Update tenant"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Roles",
+      "item": [
+        {
+          "name": "Get Roles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roles",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "roles"]
+            },
+            "description": "Get all available roles"
+          }
+        }
+      ]
+    }
+  ]
+}

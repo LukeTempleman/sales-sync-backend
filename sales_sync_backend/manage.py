@@ -10,8 +10,7 @@ from models.role import Role
 from models.tenant import Tenant
 from models.user import User
 from models.brand import Brand
-from models.survey import Survey
-from models.question import Question
+from models.survey import Survey, SurveyQuestion
 from services.auth_service import create_tenant, create_user
 
 
@@ -217,7 +216,7 @@ def add_question(tenant_id, survey_id, question_text, input_type, order_num):
     session = app.db_session
     
     # Create question
-    question = Question(
+    question = SurveyQuestion(
         tenant_id=tenant_id,
         survey_id=survey_id,
         question_text=question_text,

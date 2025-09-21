@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, current_app, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from services.team_service import (
@@ -31,7 +31,7 @@ def get_teams_handler():
         filters['manager_id'] = request.args.get('manager_id')
     
     # Get teams
-    teams = get_teams(request.app.db_session, tenant_id, filters)
+    teams = get_teams(current_app.db_session, tenant_id, filters)
     
     # Return teams
     return jsonify([team.to_dict() for team in teams]), 200
@@ -47,7 +47,7 @@ def get_team_handler(team_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Get team
-    team = get_team_by_id(request.app.db_session, tenant_id, team_id)
+    team = get_team_by_id(current_app.db_session, tenant_id, team_id)
     if not team:
         return jsonify({'error': 'Team not found'}), 404
     
@@ -74,7 +74,7 @@ def create_team_handler():
     
     # Create team
     team = create_team(
-        request.app.db_session,
+        current_app.db_session,
         tenant_id,
         data.get('name'),
         data.get('manager_id')
@@ -98,7 +98,7 @@ def update_team_handler(team_id):
     data = request.get_json()
     
     # Update team
-    team = update_team(request.app.db_session, tenant_id, team_id, data)
+    team = update_team(current_app.db_session, tenant_id, team_id, data)
     if not team:
         return jsonify({'error': 'Team not found'}), 404
     
@@ -116,12 +116,12 @@ def get_team_members_handler(team_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Get team
-    team = get_team_by_id(request.app.db_session, tenant_id, team_id)
+    team = get_team_by_id(current_app.db_session, tenant_id, team_id)
     if not team:
         return jsonify({'error': 'Team not found'}), 404
     
     # Get team members
-    members = get_team_members(request.app.db_session, tenant_id, team_id)
+    members = get_team_members(current_app.db_session, tenant_id, team_id)
     
     # Return team members
     return jsonify([member.to_dict() for member in members]), 200
@@ -138,7 +138,7 @@ def add_team_member_handler(team_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Get team
-    team = get_team_by_id(request.app.db_session, tenant_id, team_id)
+    team = get_team_by_id(current_app.db_session, tenant_id, team_id)
     if not team:
         return jsonify({'error': 'Team not found'}), 404
     
@@ -151,7 +151,7 @@ def add_team_member_handler(team_id):
     
     # Add user to team
     user_team = add_team_member(
-        request.app.db_session,
+        current_app.db_session,
         team_id,
         data.get('user_id')
     )
@@ -171,13 +171,13 @@ def remove_team_member_handler(team_id, user_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Get team
-    team = get_team_by_id(request.app.db_session, tenant_id, team_id)
+    team = get_team_by_id(current_app.db_session, tenant_id, team_id)
     if not team:
         return jsonify({'error': 'Team not found'}), 404
     
     # Remove user from team
     success = remove_team_member(
-        request.app.db_session,
+        current_app.db_session,
         team_id,
         user_id
     )

@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, current_app, jsonify
 from flask_jwt_extended import jwt_required
 
 from services.goal_service import (
@@ -40,7 +40,7 @@ def get_goals_handler():
         filters['end_date'] = request.args.get('end_date')
     
     # Get goals
-    goals = get_goals(request.app.db_session, tenant_id, filters)
+    goals = get_goals(current_app.db_session, tenant_id, filters)
     
     # Return goals
     return jsonify([goal.to_dict() for goal in goals]), 200
@@ -56,7 +56,7 @@ def get_goal_handler(goal_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Get goal
-    goal = get_goal_by_id(request.app.db_session, tenant_id, goal_id)
+    goal = get_goal_by_id(current_app.db_session, tenant_id, goal_id)
     if not goal:
         return jsonify({'error': 'Goal not found'}), 404
     
@@ -91,7 +91,7 @@ def create_goal_handler():
     
     # Create goal
     goal = create_goal(
-        request.app.db_session,
+        current_app.db_session,
         tenant_id,
         data.get('name'),
         data.get('metric'),
@@ -119,7 +119,7 @@ def update_goal_handler(goal_id):
     data = request.get_json()
     
     # Update goal
-    goal = update_goal(request.app.db_session, tenant_id, goal_id, data)
+    goal = update_goal(current_app.db_session, tenant_id, goal_id, data)
     if not goal:
         return jsonify({'error': 'Goal not found'}), 404
     
@@ -138,7 +138,7 @@ def delete_goal_handler(goal_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Delete goal
-    success = delete_goal(request.app.db_session, tenant_id, goal_id)
+    success = delete_goal(current_app.db_session, tenant_id, goal_id)
     if not success:
         return jsonify({'error': 'Goal not found'}), 404
     
@@ -156,12 +156,12 @@ def get_goal_assignments_handler(goal_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Get goal
-    goal = get_goal_by_id(request.app.db_session, tenant_id, goal_id)
+    goal = get_goal_by_id(current_app.db_session, tenant_id, goal_id)
     if not goal:
         return jsonify({'error': 'Goal not found'}), 404
     
     # Get goal assignments
-    assignments = get_goal_assignments(request.app.db_session, tenant_id, goal_id)
+    assignments = get_goal_assignments(current_app.db_session, tenant_id, goal_id)
     
     # Return goal assignments
     return jsonify([assignment.to_dict() for assignment in assignments]), 200
@@ -178,7 +178,7 @@ def assign_goal_handler(goal_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Get goal
-    goal = get_goal_by_id(request.app.db_session, tenant_id, goal_id)
+    goal = get_goal_by_id(current_app.db_session, tenant_id, goal_id)
     if not goal:
         return jsonify({'error': 'Goal not found'}), 404
     
@@ -195,7 +195,7 @@ def assign_goal_handler(goal_id):
     
     # Assign goal
     assignment = assign_goal(
-        request.app.db_session,
+        current_app.db_session,
         goal_id,
         data.get('assignee_type'),
         data.get('assignee_id'),
@@ -217,13 +217,13 @@ def unassign_goal_handler(goal_id, assignee_type, assignee_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Get goal
-    goal = get_goal_by_id(request.app.db_session, tenant_id, goal_id)
+    goal = get_goal_by_id(current_app.db_session, tenant_id, goal_id)
     if not goal:
         return jsonify({'error': 'Goal not found'}), 404
     
     # Unassign goal
     success = unassign_goal(
-        request.app.db_session,
+        current_app.db_session,
         goal_id,
         assignee_type,
         assignee_id
@@ -247,7 +247,7 @@ def update_goal_progress_handler(goal_id, assignee_type, assignee_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Get goal
-    goal = get_goal_by_id(request.app.db_session, tenant_id, goal_id)
+    goal = get_goal_by_id(current_app.db_session, tenant_id, goal_id)
     if not goal:
         return jsonify({'error': 'Goal not found'}), 404
     
@@ -260,7 +260,7 @@ def update_goal_progress_handler(goal_id, assignee_type, assignee_id):
     
     # Update goal progress
     assignment = update_goal_progress(
-        request.app.db_session,
+        current_app.db_session,
         goal_id,
         assignee_type,
         assignee_id,
@@ -284,7 +284,7 @@ def get_goal_progress_handler(goal_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Get goal progress
-    progress = get_goal_progress(request.app.db_session, tenant_id, goal_id)
+    progress = get_goal_progress(current_app.db_session, tenant_id, goal_id)
     if not progress:
         return jsonify({'error': 'Goal not found'}), 404
     

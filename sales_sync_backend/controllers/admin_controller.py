@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, current_app, jsonify
 from flask_jwt_extended import jwt_required
 from datetime import datetime
 
@@ -30,7 +30,7 @@ def get_user_activity_handler():
     
     # Get user activity
     activity = get_user_activity(
-        request.app.db_session,
+        current_app.db_session,
         tenant_id,
         start_date,
         end_date
@@ -59,7 +59,7 @@ def get_survey_completion_rates_handler():
     
     # Get survey completion rates
     rates = get_survey_completion_rates(
-        request.app.db_session,
+        current_app.db_session,
         tenant_id,
         start_date,
         end_date
@@ -98,7 +98,7 @@ def get_tenant_audit_logs_handler():
     
     # Get audit logs
     logs = get_audit_logs(
-        request.app.db_session,
+        current_app.db_session,
         tenant_id,
         user_id,
         action,
@@ -141,7 +141,7 @@ def get_all_audit_logs_handler():
     
     # Get audit logs
     logs = get_audit_logs(
-        request.app.db_session,
+        current_app.db_session,
         tenant_id,
         user_id,
         action,

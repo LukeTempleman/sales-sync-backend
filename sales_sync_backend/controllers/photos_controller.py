@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, current_app, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from services.photo_service import (
@@ -30,7 +30,7 @@ def get_photos_handler():
         filters['purpose'] = request.args.get('purpose')
     
     # Get photos
-    photos = get_photos(request.app.db_session, tenant_id, filters)
+    photos = get_photos(current_app.db_session, tenant_id, filters)
     
     # Return photos
     return jsonify([photo.to_dict() for photo in photos]), 200
@@ -46,7 +46,7 @@ def get_photo_handler(photo_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Get photo
-    photo = get_photo_by_id(request.app.db_session, tenant_id, photo_id)
+    photo = get_photo_by_id(current_app.db_session, tenant_id, photo_id)
     if not photo:
         return jsonify({'error': 'Photo not found'}), 404
     
@@ -84,7 +84,7 @@ def create_photo_handler():
     
     # Create photo
     photo = create_photo(
-        request.app.db_session,
+        current_app.db_session,
         tenant_id,
         visit_id,
         file_url,
@@ -106,12 +106,12 @@ def get_shelf_quadrants_handler(photo_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Get photo
-    photo = get_photo_by_id(request.app.db_session, tenant_id, photo_id)
+    photo = get_photo_by_id(current_app.db_session, tenant_id, photo_id)
     if not photo:
         return jsonify({'error': 'Photo not found'}), 404
     
     # Get shelf quadrants
-    shelf_quadrants = get_shelf_quadrants(request.app.db_session, tenant_id, photo_id)
+    shelf_quadrants = get_shelf_quadrants(current_app.db_session, tenant_id, photo_id)
     
     # Return shelf quadrants
     return jsonify([sq.to_dict() for sq in shelf_quadrants]), 200
@@ -127,7 +127,7 @@ def create_shelf_quadrant_handler(photo_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Get photo
-    photo = get_photo_by_id(request.app.db_session, tenant_id, photo_id)
+    photo = get_photo_by_id(current_app.db_session, tenant_id, photo_id)
     if not photo:
         return jsonify({'error': 'Photo not found'}), 404
     
@@ -142,7 +142,7 @@ def create_shelf_quadrant_handler(photo_id):
     
     # Create shelf quadrant
     shelf_quadrant = create_shelf_quadrant(
-        request.app.db_session,
+        current_app.db_session,
         tenant_id,
         photo_id,
         data.get('brand_id'),

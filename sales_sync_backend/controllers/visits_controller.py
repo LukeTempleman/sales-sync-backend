@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from services.visit_service import (
@@ -40,7 +40,7 @@ def get_visits_handler():
         filters['completed'] = request.args.get('completed').lower() == 'true'
     
     # Get visits
-    visits = get_visits(request.app.db_session, tenant_id, filters)
+    visits = get_visits(current_app.db_session, tenant_id, filters)
     
     # Return visits
     return jsonify([visit.to_dict() for visit in visits]), 200
@@ -56,7 +56,7 @@ def get_visit_handler(visit_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Get visit
-    visit = get_visit_by_id(request.app.db_session, tenant_id, visit_id)
+    visit = get_visit_by_id(current_app.db_session, tenant_id, visit_id)
     if not visit:
         return jsonify({'error': 'Visit not found'}), 404
     
@@ -89,7 +89,7 @@ def create_visit_handler():
     
     # Create visit
     visit = create_visit(
-        request.app.db_session,
+        current_app.db_session,
         tenant_id,
         user_id,
         data.get('survey_id'),
@@ -115,7 +115,7 @@ def complete_visit_handler(visit_id):
     user_id = get_jwt_identity()
     
     # Get visit
-    visit = get_visit_by_id(request.app.db_session, tenant_id, visit_id)
+    visit = get_visit_by_id(current_app.db_session, tenant_id, visit_id)
     if not visit:
         return jsonify({'error': 'Visit not found'}), 404
     
@@ -132,7 +132,7 @@ def complete_visit_handler(visit_id):
     
     # Complete visit
     visit = complete_visit(
-        request.app.db_session,
+        current_app.db_session,
         tenant_id,
         visit_id,
         data.get('answers')
@@ -152,12 +152,12 @@ def get_visit_answers_handler(visit_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Get visit
-    visit = get_visit_by_id(request.app.db_session, tenant_id, visit_id)
+    visit = get_visit_by_id(current_app.db_session, tenant_id, visit_id)
     if not visit:
         return jsonify({'error': 'Visit not found'}), 404
     
     # Get answers
-    answers = get_visit_answers(request.app.db_session, tenant_id, visit_id)
+    answers = get_visit_answers(current_app.db_session, tenant_id, visit_id)
     
     # Return answers
     return jsonify([answer.to_dict() for answer in answers]), 200
@@ -173,12 +173,12 @@ def get_visit_photos_handler(visit_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Get visit
-    visit = get_visit_by_id(request.app.db_session, tenant_id, visit_id)
+    visit = get_visit_by_id(current_app.db_session, tenant_id, visit_id)
     if not visit:
         return jsonify({'error': 'Visit not found'}), 404
     
     # Get photos
-    photos = get_visit_photos(request.app.db_session, tenant_id, visit_id)
+    photos = get_visit_photos(current_app.db_session, tenant_id, visit_id)
     
     # Return photos
     return jsonify([photo.to_dict() for photo in photos]), 200

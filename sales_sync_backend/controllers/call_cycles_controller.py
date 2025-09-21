@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, current_app, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from services.call_cycle_service import (
@@ -36,7 +36,7 @@ def get_call_cycles_handler():
         filters['created_by'] = request.args.get('created_by')
     
     # Get call cycles
-    call_cycles = get_call_cycles(request.app.db_session, tenant_id, filters)
+    call_cycles = get_call_cycles(current_app.db_session, tenant_id, filters)
     
     # Return call cycles
     return jsonify([call_cycle.to_dict() for call_cycle in call_cycles]), 200
@@ -52,7 +52,7 @@ def get_call_cycle_handler(call_cycle_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Get call cycle
-    call_cycle = get_call_cycle_by_id(request.app.db_session, tenant_id, call_cycle_id)
+    call_cycle = get_call_cycle_by_id(current_app.db_session, tenant_id, call_cycle_id)
     if not call_cycle:
         return jsonify({'error': 'Call cycle not found'}), 404
     
@@ -85,7 +85,7 @@ def create_call_cycle_handler():
     
     # Create call cycle
     call_cycle = create_call_cycle(
-        request.app.db_session,
+        current_app.db_session,
         tenant_id,
         data.get('name'),
         data.get('frequency'),
@@ -109,7 +109,7 @@ def update_call_cycle_handler(call_cycle_id):
     data = request.get_json()
     
     # Update call cycle
-    call_cycle = update_call_cycle(request.app.db_session, tenant_id, call_cycle_id, data)
+    call_cycle = update_call_cycle(current_app.db_session, tenant_id, call_cycle_id, data)
     if not call_cycle:
         return jsonify({'error': 'Call cycle not found'}), 404
     
@@ -127,7 +127,7 @@ def delete_call_cycle_handler(call_cycle_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Delete call cycle
-    success = delete_call_cycle(request.app.db_session, tenant_id, call_cycle_id)
+    success = delete_call_cycle(current_app.db_session, tenant_id, call_cycle_id)
     if not success:
         return jsonify({'error': 'Call cycle not found'}), 404
     
@@ -145,12 +145,12 @@ def get_call_cycle_locations_handler(call_cycle_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Get call cycle
-    call_cycle = get_call_cycle_by_id(request.app.db_session, tenant_id, call_cycle_id)
+    call_cycle = get_call_cycle_by_id(current_app.db_session, tenant_id, call_cycle_id)
     if not call_cycle:
         return jsonify({'error': 'Call cycle not found'}), 404
     
     # Get call cycle locations
-    locations = get_call_cycle_locations(request.app.db_session, tenant_id, call_cycle_id)
+    locations = get_call_cycle_locations(current_app.db_session, tenant_id, call_cycle_id)
     
     # Return call cycle locations
     return jsonify([location.to_dict() for location in locations]), 200
@@ -166,7 +166,7 @@ def add_call_cycle_location_handler(call_cycle_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Get call cycle
-    call_cycle = get_call_cycle_by_id(request.app.db_session, tenant_id, call_cycle_id)
+    call_cycle = get_call_cycle_by_id(current_app.db_session, tenant_id, call_cycle_id)
     if not call_cycle:
         return jsonify({'error': 'Call cycle not found'}), 404
     
@@ -179,7 +179,7 @@ def add_call_cycle_location_handler(call_cycle_id):
     
     # Add location to call cycle
     location = add_call_cycle_location(
-        request.app.db_session,
+        current_app.db_session,
         call_cycle_id,
         data.get('location'),
         data.get('shop_id'),
@@ -200,13 +200,13 @@ def remove_call_cycle_location_handler(call_cycle_id, location_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Get call cycle
-    call_cycle = get_call_cycle_by_id(request.app.db_session, tenant_id, call_cycle_id)
+    call_cycle = get_call_cycle_by_id(current_app.db_session, tenant_id, call_cycle_id)
     if not call_cycle:
         return jsonify({'error': 'Call cycle not found'}), 404
     
     # Remove location from call cycle
     success = remove_call_cycle_location(
-        request.app.db_session,
+        current_app.db_session,
         call_cycle_id,
         location_id
     )
@@ -228,7 +228,7 @@ def update_call_cycle_location_order_handler(call_cycle_id, location_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Get call cycle
-    call_cycle = get_call_cycle_by_id(request.app.db_session, tenant_id, call_cycle_id)
+    call_cycle = get_call_cycle_by_id(current_app.db_session, tenant_id, call_cycle_id)
     if not call_cycle:
         return jsonify({'error': 'Call cycle not found'}), 404
     
@@ -241,7 +241,7 @@ def update_call_cycle_location_order_handler(call_cycle_id, location_id):
     
     # Update call cycle location order
     location = update_call_cycle_location_order(
-        request.app.db_session,
+        current_app.db_session,
         call_cycle_id,
         location_id,
         data.get('order_num')
@@ -264,7 +264,7 @@ def get_call_cycle_status_handler(call_cycle_id):
     tenant_id = get_tenant_id_from_jwt()
     
     # Get call cycle status
-    status = get_call_cycle_status(request.app.db_session, tenant_id, call_cycle_id)
+    status = get_call_cycle_status(current_app.db_session, tenant_id, call_cycle_id)
     if not status:
         return jsonify({'error': 'Call cycle not found'}), 404
     
